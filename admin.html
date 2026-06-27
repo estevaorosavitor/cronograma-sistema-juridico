@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin · Cronograma — Sistema Jurídico Empresarial Integrado</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="head-inner">
+    <div class="brand">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01"/></svg>
+      </div>
+      <div>
+        <div class="eyebrow">Painel de administração</div>
+        <h1>Sistema Jurídico Empresarial Integrado</h1>
+      </div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-main">
+        <div class="prog-top">
+          <span class="prog-label">Progresso geral do projeto</span>
+          <span class="prog-pct"><span id="pctNum">0</span><span class="u">%</span></span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+      </div>
+      <div class="stats">
+        <div class="stat done"><div class="v" id="stDone">0</div><div class="k">Concluídas</div></div>
+        <div class="stat prog"><div class="v" id="stProg">0</div><div class="k">Em andamento</div></div>
+        <div class="stat"><div class="v" id="stTotal">0</div><div class="k">Total</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="admin-banner"><div class="inner">
+  Clique nas etapas para alterar o status (pendente → em andamento → concluída). As mudanças ficam salvas neste navegador.
+  Para publicar para o cliente: <b>Baixar data.json</b> e enviar o arquivo para a pasta do site na VPS, substituindo o anterior.
+</div></div>
+
+<div class="toolbar">
+  <div class="filters">
+    <button class="fbtn active" data-f="all">Todas</button>
+    <button class="fbtn f-pend" data-f="0"><span class="dot"></span>Pendentes</button>
+    <button class="fbtn f-prog" data-f="1"><span class="dot"></span>Em andamento</button>
+    <button class="fbtn f-done" data-f="2"><span class="dot"></span>Concluídas</button>
+  </div>
+  <div class="spacer"></div>
+  <button class="tbtn primary" id="btnExport" title="Baixar o data.json para publicar no site">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+    Baixar data.json
+  </button>
+  <button class="tbtn" id="btnImport" title="Carregar um data.json existente para continuar editando">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 9l5-5 5 5M12 4v12"/></svg>
+    Importar
+  </button>
+  <button class="tbtn danger" id="btnReset" title="Zerar todo o progresso">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+    Zerar
+  </button>
+  <input type="file" id="fileInput" accept="application/json" hidden>
+</div>
+
+<main id="timeline"></main>
+
+<footer>
+  <span>Edição salva automaticamente neste navegador · <span class="saved" id="savedAt">—</span></span>
+  <span>10 meses · 8 fases</span>
+</footer>
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span id="toastMsg"></span></div>
+
+<script src="cronograma.js"></script>
+<script>
+  const KEY = "sjei_cronograma_admin_v1";
+  let status = {}, savedTs = null;
+
+  function load(){
+    try{ const raw = localStorage.getItem(KEY);
+      if(raw){ const o = JSON.parse(raw); status = o.status || {}; savedTs = o.ts || null; }
+    }catch(e){}
+  }
+  function persist(){
+    savedTs = Date.now();
+    try{ localStorage.setItem(KEY, JSON.stringify({ status, ts: savedTs })); }catch(e){}
+    renderSaved();
+  }
+  function renderSaved(){
+    document.getElementById("savedAt").textContent = savedTs ? ("salvo " + fmtDate(new Date(savedTs).toISOString())) : "sem alterações ainda";
+  }
+
+  function render(){
+    buildTimeline(document.getElementById("timeline"), status, { editable:true, onChange: persist });
+    setupFilters();
+    renderSaved();
+  }
+
+  // Baixar data.json (formato lido pela página do cliente)
+  document.getElementById("btnExport").addEventListener("click",()=>{
+    const payload = { app:"sjei_cronograma", version:1, updatedAt:new Date().toISOString(), status };
+    const blob = new Blob([JSON.stringify(payload,null,2)], { type:"application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "data.json"; a.click();
+    URL.revokeObjectURL(a.href);
+    toast("data.json gerado — agora suba para a VPS");
+  });
+
+  // Importar data.json existente
+  document.getElementById("btnImport").addEventListener("click",()=>document.getElementById("fileInput").click());
+  document.getElementById("fileInput").addEventListener("change",e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const rd=new FileReader();
+    rd.onload=()=>{ try{
+      const o=JSON.parse(rd.result);
+      if(o.status && typeof o.status==="object"){ status=o.status; persist(); render(); toast("Progresso importado"); }
+      else toast("Arquivo inválido");
+    }catch(err){ toast("Não foi possível ler o arquivo"); } };
+    rd.readAsText(f); e.target.value="";
+  });
+
+  // Zerar
+  document.getElementById("btnReset").addEventListener("click",()=>{
+    if(confirm("Zerar todo o progresso? Esta ação não pode ser desfeita.\n\nDica: baixe um data.json antes, se quiser guardar.")){
+      status={}; localStorage.removeItem(KEY); savedTs=null; render(); toast("Progresso zerado");
+    }
+  });
+
+  load(); render();
+</script>
+</body>
+</html>
