@@ -2,10 +2,11 @@ services:
   cronograma:
     build: .
     container_name: cronograma-juridico
-    ports:
-      - "8080:80"      # o Nginx Proxy Manager aponta o domínio para esta porta
     restart: unless-stopped
     volumes:
-      # O progresso publicado fica neste arquivo no host.
-      # Para atualizar o que o cliente vê, basta substituir ./data.json (sem rebuild).
       - ./data.json:/usr/share/nginx/html/data.json:ro
+    networks:
+      - proxy-net
+networks:
+  proxy-net:
+    external: true
