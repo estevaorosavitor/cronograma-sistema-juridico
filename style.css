@@ -70,8 +70,8 @@ header {
 }
 
 .mark {
-  width: 50;
-  height: 50px;
+  width: 38;
+  height: 38px;
   border-radius: 10px;
   background: var(--blue);
   display: flex;
@@ -82,8 +82,8 @@ header {
 }
 
 .mark svg {
-  width: 30;
-  height: 30px
+  width: 21;
+  height: 21px
 }
 
 .mark:has(img) {
