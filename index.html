@@ -1,71 +1,86 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cronograma · Sistema Jurídico Empresarial Integrado</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cronograma · Sistema Jurídico Victor Miziaeski</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<header>
-  <div class="head-inner">
-    <div class="brand">
-      <div class="mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01"/></svg>
-      </div>
-      <div>
-        <div class="eyebrow">Cronograma de desenvolvimento <span class="ro-badge">somente leitura</span></div>
-        <h1>Sistema Jurídico Empresarial Integrado</h1>
-      </div>
-    </div>
-    <div class="prog-wrap">
-      <div class="prog-main">
-        <div class="prog-top">
-          <span class="prog-label">Progresso geral do projeto</span>
-          <span class="prog-pct"><span id="pctNum">0</span><span class="u">%</span></span>
+  <header>
+    <div class="head-inner">
+      <div class="brand">
+        <div class="mark">
+          <img src="logo.png" alt="Logo do escritório">
         </div>
-        <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+        <div>
+          <div class="eyebrow">Cronograma de desenvolvimento</div>
+          <h1>Sistema Jurídico Victor Miziaeski</h1>
+          <span class="prog-label">Advogados associados</span>
+        </div>
       </div>
-      <div class="stats">
-        <div class="stat done"><div class="v" id="stDone">0</div><div class="k">Concluídas</div></div>
-        <div class="stat prog"><div class="v" id="stProg">0</div><div class="k">Em andamento</div></div>
-        <div class="stat"><div class="v" id="stTotal">0</div><div class="k">Total</div></div>
+      <div class="prog-wrap">
+        <div class="prog-main">
+          <div class="prog-top">
+            <span class="prog-label">Progresso geral do projeto</span>
+            <span class="prog-pct"><span id="pctNum">0</span><span class="u">%</span></span>
+          </div>
+          <div class="bar">
+            <div class="bar-fill" id="barFill"></div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat done">
+            <div class="v" id="stDone">0</div>
+            <div class="k">Concluídas</div>
+          </div>
+          <div class="stat prog">
+            <div class="v" id="stProg">0</div>
+            <div class="k">Em andamento</div>
+          </div>
+          <div class="stat">
+            <div class="v" id="stTotal">0</div>
+            <div class="k">Total</div>
+          </div>
+        </div>
       </div>
     </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="filters">
+      <button class="fbtn active" data-f="all">Todas</button>
+      <button class="fbtn f-pend" data-f="0"><span class="dot"></span>Pendentes</button>
+      <button class="fbtn f-prog" data-f="1"><span class="dot"></span>Em andamento</button>
+      <button class="fbtn f-done" data-f="2"><span class="dot"></span>Concluídas</button>
+    </div>
   </div>
-</header>
 
-<div class="toolbar">
-  <div class="filters">
-    <button class="fbtn active" data-f="all">Todas</button>
-    <button class="fbtn f-pend" data-f="0"><span class="dot"></span>Pendentes</button>
-    <button class="fbtn f-prog" data-f="1"><span class="dot"></span>Em andamento</button>
-    <button class="fbtn f-done" data-f="2"><span class="dot"></span>Concluídas</button>
-  </div>
-</div>
+  <main id="timeline"></main>
 
-<main id="timeline"></main>
+  <footer>
+    <span>Acompanhamento do desenvolvimento · atualizado em <span class="saved" id="updatedAt">—</span></span>
+    <span>10 meses · 8 fases</span>
+  </footer>
 
-<footer>
-  <span>Acompanhamento do desenvolvimento · atualizado em <span class="saved" id="updatedAt">—</span></span>
-  <span>10 meses · 8 fases</span>
-</footer>
-
-<script src="cronograma.js"></script>
-<script>
-  // Carrega o progresso publicado (data.json). Se não existir, mostra tudo pendente.
-  async function init(){
-    let status = {}, updatedAt = null;
-    try{
-      const res = await fetch("data.json?ts=" + Date.now(), { cache:"no-store" });
-      if(res.ok){ const d = await res.json(); status = d.status || {}; updatedAt = d.updatedAt || null; }
-    }catch(e){ /* sem data.json ainda — segue com tudo pendente */ }
-    buildTimeline(document.getElementById("timeline"), status, { editable:false });
-    setupFilters();
-    document.getElementById("updatedAt").textContent = fmtDate(updatedAt);
-  }
-  init();
-</script>
+  <script src="cronograma.js"></script>
+  <script>
+    // Carrega o progresso publicado (data.json). Se não existir, mostra tudo pendente.
+    async function init() {
+      let status = {}, updatedAt = null;
+      try {
+        const res = await fetch("data.json?ts=" + Date.now(), { cache: "no-store" });
+        if (res.ok) { const d = await res.json(); status = d.status || {}; updatedAt = d.updatedAt || null; }
+      } catch (e) { /* sem data.json ainda — segue com tudo pendente */ }
+      buildTimeline(document.getElementById("timeline"), status, { editable: false });
+      setupFilters();
+      document.getElementById("updatedAt").textContent = fmtDate(updatedAt);
+    }
+    init();
+  </script>
 </body>
+
 </html>
